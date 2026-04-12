@@ -1,0 +1,16 @@
+@use '@angular/material' as mat;
+
+mat-sidenav-container {
+  flex: 1;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.content {
+  min-height: 0;
+  height: 100%;
+}

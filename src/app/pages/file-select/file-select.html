@@ -1,0 +1,8 @@
+<div>
+    <button aria-label="Choose facebook folder" type="button" matFab extended (click)="fileInput.click()" [disabled]="fileSelected">
+        <mat-icon>folder</mat-icon>
+        Choose File
+    </button>
+    <mat-progress-bar mode="determinate" [value]="percentDone()"></mat-progress-bar>
+</div>
+<input hidden (change)="onFileSelected($event)" #fileInput type="file" id="file" webkitdirectory multiple>

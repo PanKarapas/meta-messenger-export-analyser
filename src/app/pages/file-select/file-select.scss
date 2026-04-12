@@ -1,0 +1,12 @@
+div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+mat-progress-bar {
+    width: clamp(150px, 10vh, 300px);
+    margin-top: 1vh;
+}
