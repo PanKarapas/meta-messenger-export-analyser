@@ -1,0 +1,17 @@
+<div class="panels">
+    <div>
+        <mat-tab-group mat-stretch-tabs="true" mat-align-tabs="start" animationDuration="100">
+            <mat-tab label="Word frequency">
+                <app-frequency-row-table [dataSource]="wordFrequencyDataSource" nameHeader="Word"></app-frequency-row-table>
+            </mat-tab>
+            <mat-tab label="Reaction frequency">
+                <app-frequency-row-table [dataSource]="reactionFrequencyDataSource" nameHeader="Reaction"></app-frequency-row-table>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+    <div class="panel">Panel 2</div>
+    <div class="panel">Panel 3</div>
+    <div class="panel">Panel 4</div>
+    <div class="panel">Panel 5</div>
+    <div class="panel">Panel 6</div>
+</div>

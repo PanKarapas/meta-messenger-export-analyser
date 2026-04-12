@@ -1,0 +1,50 @@
+.panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    height: 100%;
+
+    @media (max-width: 700px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: unset;
+    }
+    div {
+        overflow: hidden;
+    }
+}
+mat-tab-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    ::ng-deep .mat-mdc-tab-body-wrapper {
+        flex: 1;
+        min-height: 0;
+    }
+}
+.virtualScrollContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    cdk-virtual-scroll-viewport {
+        flex: 1;
+        min-height: 0;
+    }
+}
+
+.tableWrap {
+    max-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scrollable {
+    flex: 1;
+    overflow: auto;
+}
+
+.panel {
+    min-height: 0;
+}
