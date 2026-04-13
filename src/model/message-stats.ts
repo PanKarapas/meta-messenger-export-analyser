@@ -1,7 +1,8 @@
 // 0-1, 1-2, 2-3, ..., 23-24
 export type CountTimeOfDay = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
-// Sunday, Monday, ...
-export type CountDayOfWeek = [number, number, number, number, number, number, number];
+
+// Monday, Tuesday, ..., Sunday
+export type CountByDayAndTime = [CountTimeOfDay, CountTimeOfDay, CountTimeOfDay, CountTimeOfDay, CountTimeOfDay, CountTimeOfDay, CountTimeOfDay];
 
 export interface MessageStats {
     global: GlobalStats,
@@ -10,14 +11,12 @@ export interface MessageStats {
 
 
 export interface GlobalStats {
-    [participant: string]: {
-        totalTextMessages: number,
-        totalReactions: number,
-        totalMedia: number,
-        numberOfConversations: number,
-        wordCount: IndividualCount
-    }
+    [participant: string]: GlobalParticipantStats
 }
+
+export interface GlobalParticipantStats extends ConversationParticipantStats {
+     numberOfConversations: number,
+} 
 
 export interface ConversationStats {
     participants: string[],
@@ -29,8 +28,7 @@ export interface ConversationStats {
 export interface ConversationParticipantStats {
     textMessages: {
         count: number,
-        countTimeOfDay: CountTimeOfDay,
-        countDayOfWeek: CountDayOfWeek,
+        countByDayAndTime: CountByDayAndTime,
         totalLength: number,
         wordCount: IndividualCount
     }
@@ -40,8 +38,7 @@ export interface ConversationParticipantStats {
     },
     linkMessages: {
         count: number,
-        countTimeOfDay: CountTimeOfDay,
-        countDayOfWeek: CountDayOfWeek,
+        countByDayAndTime: CountByDayAndTime,
     },
     mediaCount: number,
 }

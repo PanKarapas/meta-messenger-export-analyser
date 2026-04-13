@@ -2,16 +2,17 @@
 
 import zod from "zod";
 import { EndToEndJsonFile } from "../model/json-file-types";
-import { ConversationParticipantStats, ConversationStats, CountDayOfWeek, CountTimeOfDay, GlobalStats, IndividualCount, MessageStats } from "../model/message-stats";
+import { ConversationParticipantStats, ConversationStats, CountByDayAndTime, CountTimeOfDay, GlobalStats, IndividualCount, MessageStats } from "../model/message-stats";
 import { Directory, isDirectory } from "../utils/file-list-to-directory";
 import { addIndividualCounts } from "../utils/individual-counts-utils";
 export type WorkerIncoming = Directory;
 export type WorkerOutgoing = { type: "Progress", progress: number } | { type: "Done", result: MessageStats }
 
+const DAY_INDEX_MONDAY_START = [6, 0, 1, 2, 3, 4, 5] as const;
 
 addEventListener('message', ({ data }) => {
   const dataTyped = data as Directory;
-  const result = processEndToEndFiles(dataTyped, (progress) => {
+  processEndToEndFiles(dataTyped, (progress) => {
     postMessage({ type: "Progress", progress } as WorkerOutgoing);
   }).then((result) => {
     postMessage({ type: "Done", result } as WorkerOutgoing);
@@ -22,8 +23,7 @@ addEventListener('message', ({ data }) => {
 const DefaultConversationParticipantStats: ConversationParticipantStats = {
   textMessages: {
     count: 0,
-    countTimeOfDay: new Array(24).fill(0) as CountTimeOfDay,
-    countDayOfWeek: new Array(7).fill(0) as CountDayOfWeek,
+    countByDayAndTime: Array.from({length: 7}, () => new Array(24).fill(0)) as CountByDayAndTime,
     totalLength: 0,
     wordCount: new Map()
   },
@@ -33,8 +33,7 @@ const DefaultConversationParticipantStats: ConversationParticipantStats = {
   },
   linkMessages: {
     count: 0,
-    countTimeOfDay: new Array(24).fill(0) as CountTimeOfDay,
-    countDayOfWeek: new Array(7).fill(0) as CountDayOfWeek,
+    countByDayAndTime: Array.from({length: 7}, () => new Array(24).fill(0)) as CountByDayAndTime,
   },
   mediaCount: 0
 };
@@ -70,7 +69,7 @@ export async function processEndToEndFiles(directory: Directory, updateProgress:
               updateProgress(((conversationProgress + counter) / directory.children.length));
             }
           );
-        addConverstationStatsToGlobalStats(result.global, result.conversation[parsed.data.threadName]);
+        addConversationStatsToGlobalStats(result.global, result.conversation[parsed.data.threadName]);
       } else {
         // TODO: log error?
         continue;
@@ -98,8 +97,7 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
     switch (message.type) {
       case "text":
         result.participantStats[message.senderName].textMessages.count += 1;
-        result.participantStats[message.senderName].textMessages.countDayOfWeek[date.getDay()] += 1;
-        result.participantStats[message.senderName].textMessages.countTimeOfDay[date.getHours()] += 1;
+        result.participantStats[message.senderName].textMessages.countByDayAndTime[DAY_INDEX_MONDAY_START[date.getDay()]][date.getHours()] += 1;
         result.participantStats[message.senderName].textMessages.totalLength += message.text.length;
         result.participantStats[message.senderName].textMessages.wordCount =
           addIndividualCounts(
@@ -109,8 +107,7 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
         break;
       case "link":
         result.participantStats[message.senderName].linkMessages.count += 1;
-        result.participantStats[message.senderName].linkMessages.countDayOfWeek[date.getDay()] += 1;
-        result.participantStats[message.senderName].linkMessages.countTimeOfDay[date.getHours()] += 1;
+        result.participantStats[message.senderName].linkMessages.countByDayAndTime[DAY_INDEX_MONDAY_START[date.getDay()]][date.getHours()] += 1;
         break;
       case "media":
         result.participantStats[message.senderName].mediaCount += 1;
@@ -126,7 +123,7 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
       }
 
       result.participantStats[reaction.actor].reactions.totalCount += 1;
-      result.participantStats[reaction.actor].reactions.individualCount.set(reaction.reaction, 
+      result.participantStats[reaction.actor].reactions.individualCount.set(reaction.reaction,
         (result.participantStats[reaction.actor].reactions.individualCount.get(reaction.reaction) ?? 0) + 1);
     }
     counter++;
@@ -138,25 +135,35 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
   return result;
 }
 
-function addConverstationStatsToGlobalStats(globalStats: GlobalStats, converstationStats: ConversationStats) {
-  for (var participant of converstationStats.participants) {
+function addConversationStatsToGlobalStats(globalStats: GlobalStats, conversationStats: ConversationStats) {
+  for (var participant of conversationStats.participants) {
     if (!globalStats[participant]) {
       globalStats[participant] = {
-        totalTextMessages: 0,
-        totalMedia: 0,
-        totalReactions: 0,
-        numberOfConversations: 0,
-        wordCount: new Map()
+        ...structuredClone(DefaultConversationParticipantStats),
+        numberOfConversations: 0
       }
     }
 
     globalStats[participant].numberOfConversations += 1;
 
-    if (converstationStats.participantStats[participant]) {
-      globalStats[participant].totalTextMessages += converstationStats.participantStats[participant].textMessages.count ?? 0;
-      globalStats[participant].totalMedia += converstationStats.participantStats[participant].mediaCount ?? 0;
-      globalStats[participant].totalReactions += converstationStats.participantStats[participant].reactions.totalCount ?? 0;
-      globalStats[participant].wordCount = addIndividualCounts(globalStats[participant].wordCount, converstationStats.participantStats[participant].textMessages.wordCount);
+    if (conversationStats.participantStats[participant]) {
+      const globalParticipantStats = globalStats[participant];
+      const convParticipantStats = conversationStats.participantStats[participant];
+      globalStats[participant].textMessages = {
+        count: globalParticipantStats.textMessages.count + (convParticipantStats.textMessages.count ?? 0),
+        countByDayAndTime: globalParticipantStats.textMessages.countByDayAndTime.map((val, i) => val.map((val2, j) => val2 + (convParticipantStats.textMessages.countByDayAndTime[i][j] ?? 0))) as CountByDayAndTime,
+        totalLength: globalParticipantStats.textMessages.totalLength + (convParticipantStats.textMessages.totalLength ?? 0),
+        wordCount: addIndividualCounts(globalParticipantStats.textMessages.wordCount, convParticipantStats.textMessages.wordCount)
+      };
+      globalStats[participant].reactions = {
+        totalCount: globalParticipantStats.reactions.totalCount + (convParticipantStats.reactions.totalCount ?? 0),
+        individualCount: addIndividualCounts(globalParticipantStats.reactions.individualCount, convParticipantStats.reactions.individualCount)
+      };
+      globalStats[participant].mediaCount += convParticipantStats.mediaCount ?? 0;
+      globalStats[participant].linkMessages = {
+        count: globalParticipantStats.linkMessages.count + (convParticipantStats.linkMessages.count ?? 0),
+        countByDayAndTime: globalParticipantStats.linkMessages.countByDayAndTime.map((val, i) => val.map((val2, j) => val2 + (convParticipantStats.linkMessages.countByDayAndTime[i][j] ?? 0))) as CountByDayAndTime,
+      };
     }
   }
 }
