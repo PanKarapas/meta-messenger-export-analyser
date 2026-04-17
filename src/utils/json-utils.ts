@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function stringifyMapReplacer(_: string, value: any): any {
     if(value instanceof Map){
         return {
@@ -8,7 +9,7 @@ export function stringifyMapReplacer(_: string, value: any): any {
 
     return value;
 }
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseMapReplacer(_: string, value: any): any {
     if(value.__type === "Map") {
         const result = new Map();

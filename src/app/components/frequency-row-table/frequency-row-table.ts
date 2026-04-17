@@ -1,10 +1,9 @@
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { AfterViewInit, Component, input, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, input, ViewChild } from '@angular/core';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FrequencyRow } from '../../../model/shared-ui-types';
-import { DataSource } from '@angular/cdk/table';
 
 @Component({
   selector: 'app-frequency-row-table',

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GlobalParticipantStats, MessageStats } from '../../../model/message-stats';
 import { MatTableDataSource } from '@angular/material/table';
@@ -10,7 +10,7 @@ import { FrequencyRow } from '../../../model/shared-ui-types';
 import { parseMapReplacer } from '../../../utils/json-utils';
 import { FrequencyRowTable } from "../../components/frequency-row-table/frequency-row-table";
 
-import { Chart, BubbleController, LinearScale, PointElement, CategoryScale, Tooltip, BubbleDataPoint, Title } from "chart.js";
+import { Chart, BubbleController, LinearScale, PointElement, CategoryScale, Tooltip, Title } from "chart.js";
 
 type BubbleDataPointWithCount = { x: string, y: string, r: number; count: number; }
 
