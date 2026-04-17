@@ -2,17 +2,33 @@
     <div class="panel">
         <mat-tab-group mat-stretch-tabs="true" mat-align-tabs="start" animationDuration="100">
             <mat-tab label="Word frequency">
-                <app-frequency-row-table [dataSource]="wordFrequencyDataSource" nameHeader="Word"></app-frequency-row-table>
+                <app-frequency-row-table [dataSource]="wordFrequencyDataSource"
+                    nameHeader="Word"></app-frequency-row-table>
             </mat-tab>
             <mat-tab label="Reaction frequency">
-                <app-frequency-row-table [dataSource]="reactionFrequencyDataSource" nameHeader="Reaction"></app-frequency-row-table>
+                <app-frequency-row-table [dataSource]="reactionFrequencyDataSource"
+                    nameHeader="Reaction"></app-frequency-row-table>
             </mat-tab>
         </mat-tab-group>
     </div>
     <div class="panel">
-        <canvas id="timeChart" role="img" aria-label="Chart showing the frequency of messages based on day of the week and time of day"></canvas>
+        <h1>Stats</h1>
+        <mat-divider></mat-divider>
+        @if (globalParticipantStats) {
+        <a>Total text messages: {{globalParticipantStats.textMessages.count}} messages sent</a>
+        <br />
+        <a>Average text length: {{
+            (globalParticipantStats.textMessages.totalLength/globalParticipantStats.textMessages.count).toLocaleString(undefined,
+            {maximumFractionDigits: 1})
+            }} characters</a>
+        <br />
+        <a>Number of conversations: {{globalParticipantStats.numberOfConversations}}</a>
+        }
     </div>
-    <div class="panel">Panel 3</div>
+    <div class="panel">
+        <canvas id="timeChart" role="img"
+            aria-label="Chart showing the frequency of messages based on day of the week and time of day"></canvas>
+    </div>
     <div class="panel">Panel 4</div>
     <div class="panel">Panel 5</div>
     <div class="panel">Panel 6</div>

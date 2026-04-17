@@ -175,7 +175,7 @@ function countWords(text: string): IndividualCount {
       .map(x => x.replaceAll(/(^[\p{P}\p{S}]+|[\p{P}\p{S}]+$)/gu, ""))
       .filter(x => x.length > 0)
       .filter(x => !/\d+/.test(x))
-      .filter(x => !x.startsWith('http') && !x.includes('www.'))
+      .filter(x => !x.startsWith('http') && !x.includes('www.'));
 
   let result: IndividualCount = new Map<string, number>();
   split.forEach(key => {
