@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageStats } from '../../../model/message-stats';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatTabsModule } from '@angular/material/tabs';
 import { parseMapReplacer } from '../../../utils/json-utils';
 

@@ -2,7 +2,7 @@
 
 import zod from "zod";
 import { EndToEndJsonFile } from "../model/json-file-types";
-import { ConversationParticipantStats, ConversationStats, CountByDayAndTime, CountTimeOfDay, GlobalStats, IndividualCount, MessageStats } from "../model/message-stats";
+import { ConversationParticipantStats, ConversationStats, CountByDayAndTime, GlobalStats, IndividualCount, MessageStats } from "../model/message-stats";
 import { Directory, isDirectory } from "../utils/file-list-to-directory";
 import { addIndividualCounts } from "../utils/individual-counts-utils";
 export type WorkerIncoming = Directory;
@@ -40,12 +40,12 @@ const DefaultConversationParticipantStats: ConversationParticipantStats = {
 
 
 export async function processEndToEndFiles(directory: Directory, updateProgress: (progress: number) => void): Promise<MessageStats> {
-  var result: MessageStats = {
+  const result: MessageStats = {
     global: {},
     conversation: {}
   };
-  var counter = 0;
-  for (var file of directory.children) {
+  let counter = 0;
+  for (const file of directory.children) {
     try {
       // Skip nested directories
       if (isDirectory(file)) {
@@ -53,14 +53,14 @@ export async function processEndToEndFiles(directory: Directory, updateProgress:
       }
 
       // parse JSON, skip any that fail to parse
-      var obj: any;
+      let obj: unknown;
       try {
         obj = JSON.parse(await file.text());
       } catch {
         continue;
       }
 
-      var parsed = EndToEndJsonFile.safeParse(obj);
+      const parsed = EndToEndJsonFile.safeParse(obj);
       if (parsed.success) {
         result.conversation[parsed.data.threadName] =
           await processEndToEndConversation(parsed.data,
@@ -83,12 +83,12 @@ export async function processEndToEndFiles(directory: Directory, updateProgress:
 }
 
 async function processEndToEndConversation(conversation: zod.infer<typeof EndToEndJsonFile>, updateProgress: (progress: number) => void): Promise<ConversationStats> {
-  let result: ConversationStats = {
+  const result: ConversationStats = {
     participants: conversation.participants,
     participantStats: {}
   };
   let counter = 0;
-  for (var message of conversation.messages) {
+  for (const message of conversation.messages) {
     const date = new Date(message.timestamp);
     if (!result.participantStats[message.senderName]) {
       result.participantStats[message.senderName] = structuredClone(DefaultConversationParticipantStats);
@@ -117,7 +117,7 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
         break;
     }
 
-    for (var reaction of message.reactions) {
+    for (const reaction of message.reactions) {
       if (!result.participantStats[reaction.actor]) {
         result.participantStats[reaction.actor] = structuredClone(DefaultConversationParticipantStats);
       }
@@ -136,7 +136,7 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
 }
 
 function addConversationStatsToGlobalStats(globalStats: GlobalStats, conversationStats: ConversationStats) {
-  for (var participant of conversationStats.participants) {
+  for (const participant of conversationStats.participants) {
     if (!globalStats[participant]) {
       globalStats[participant] = {
         ...structuredClone(DefaultConversationParticipantStats),
@@ -177,7 +177,7 @@ function countWords(text: string): IndividualCount {
       .filter(x => !/\d+/.test(x))
       .filter(x => !x.startsWith('http') && !x.includes('www.'));
 
-  let result: IndividualCount = new Map<string, number>();
+  const result: IndividualCount = new Map<string, number>();
   split.forEach(key => {
     result.set(key, (result.get(key) ?? 0) + 1)
   });

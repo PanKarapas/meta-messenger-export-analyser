@@ -7,7 +7,7 @@ export function fileListToDirectory(list: FileList): Directory | null {
     if(list.length === 0) {
         return null;
     }
-    let result: Directory = {
+    const result: Directory = {
         name: "dummy",
         children: []
     };

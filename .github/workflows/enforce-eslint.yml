@@ -1,0 +1,27 @@
+name: Enforce eslint passes on all commits
+run-name: ${{ github.actor }} is testing all commits in their PR pass lint
+on: 
+  pull_request:
+    branches: [main]
+jobs:
+  Enforce_eslint_passes:
+    name: Enforce eslint passes on all commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Get the whole history
+      - name: Set Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: |
+          for commit in $(git rev-list ${{github.event.pull_request.base.sha}}..${{github.event.pull_request.head.sha}}); do
+              git checkout $commit
+              yarn install --frozen-lockfile
+              yarn lint
+          done
+
+
+
+
