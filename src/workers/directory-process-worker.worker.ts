@@ -4,7 +4,7 @@ import zod from "zod";
 import { EndToEndJsonFile } from "../model/json-file-types";
 import { ConversationParticipantStats, ConversationStats, CountByDayAndTime, GlobalStats, IndividualCount, MessageStats } from "../model/message-stats";
 import { Directory, isDirectory } from "../utils/file-list-to-directory";
-import { addIndividualCounts } from "../utils/individual-counts-utils";
+import { addDayCounts, addIndividualCounts } from "../utils/count-utils";
 export type WorkerIncoming = Directory;
 export type WorkerOutgoing = { type: "Progress", progress: number } | { type: "Done", result: MessageStats }
 
@@ -23,7 +23,7 @@ addEventListener('message', ({ data }) => {
 const DefaultConversationParticipantStats: ConversationParticipantStats = {
   textMessages: {
     count: 0,
-    countByDayAndTime: Array.from({length: 7}, () => new Array(24).fill(0)) as CountByDayAndTime,
+    countByDayAndTime: Array.from({ length: 7 }, () => new Array(24).fill(0)) as CountByDayAndTime,
     totalLength: 0,
     wordCount: new Map()
   },
@@ -33,9 +33,10 @@ const DefaultConversationParticipantStats: ConversationParticipantStats = {
   },
   linkMessages: {
     count: 0,
-    countByDayAndTime: Array.from({length: 7}, () => new Array(24).fill(0)) as CountByDayAndTime,
+    countByDayAndTime: Array.from({ length: 7 }, () => new Array(24).fill(0)) as CountByDayAndTime,
   },
-  mediaCount: 0
+  mediaCount: 0,
+  dailyCount: new Map()
 };
 
 
@@ -90,8 +91,17 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
   let counter = 0;
   for (const message of conversation.messages) {
     const date = new Date(message.timestamp);
+    const dateString = date.toISOString().split('T')[0];
+
     if (!result.participantStats[message.senderName]) {
       result.participantStats[message.senderName] = structuredClone(DefaultConversationParticipantStats);
+    }
+
+    let dailyCount = result.participantStats[message.senderName].dailyCount.get(dateString);
+
+    if (!dailyCount) {
+      dailyCount = { text: 0, media: 0, links: 0 };
+      result.participantStats[message.senderName].dailyCount.set(dateString, dailyCount);
     }
 
     switch (message.type) {
@@ -104,13 +114,16 @@ async function processEndToEndConversation(conversation: zod.infer<typeof EndToE
             result.participantStats[message.senderName].textMessages.wordCount,
             countWords(message.text)
           );
+        dailyCount.text += 1;
         break;
       case "link":
         result.participantStats[message.senderName].linkMessages.count += 1;
         result.participantStats[message.senderName].linkMessages.countByDayAndTime[DAY_INDEX_MONDAY_START[date.getDay()]][date.getHours()] += 1;
+        dailyCount.links += 1;
         break;
       case "media":
         result.participantStats[message.senderName].mediaCount += 1;
+        dailyCount.media += 1;
         break;
       case "placeholder":
         // TODO: count deleted? Probably not accurate
@@ -164,6 +177,10 @@ function addConversationStatsToGlobalStats(globalStats: GlobalStats, conversatio
         count: globalParticipantStats.linkMessages.count + (convParticipantStats.linkMessages.count ?? 0),
         countByDayAndTime: globalParticipantStats.linkMessages.countByDayAndTime.map((val, i) => val.map((val2, j) => val2 + (convParticipantStats.linkMessages.countByDayAndTime[i][j] ?? 0))) as CountByDayAndTime,
       };
+
+      for(const [date, count] of conversationStats.participantStats[participant].dailyCount.entries()) {
+        globalStats[participant].dailyCount.set(date, addDayCounts(globalStats[participant].dailyCount.get(date), count));
+      }
     }
   }
 }

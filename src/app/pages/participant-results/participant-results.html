@@ -29,7 +29,9 @@
         <canvas id="timeChart" role="img"
             aria-label="Chart showing the frequency of messages based on day of the week and time of day"></canvas>
     </div>
-    <div class="panel">Panel 4</div>
-    <div class="panel">Panel 5</div>
+    <div class="panel">
+        <app-daily-count-heat-map [dailyCount]="globalParticipantStats?.dailyCount"></app-daily-count-heat-map>
+    </div>
+    <div class="panel"></div>
     <div class="panel">Panel 6</div>
 </div>
