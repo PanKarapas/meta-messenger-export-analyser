@@ -13,6 +13,12 @@ export default defineConfig([
     extends: ["js/recommended"],
     languageOptions: {
       globals: globals.browser
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }]
     }
   },
   tseslint.configs.recommended,

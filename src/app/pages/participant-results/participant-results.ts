@@ -5,29 +5,46 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 
-import { addIndividualCounts, individualCountToFrequencyRows } from '../../../utils/individual-counts-utils';
+import { addIndividualCounts, individualCountToFrequencyRows } from '../../../utils/count-utils';
 import { FrequencyRow } from '../../../model/shared-ui-types';
 import { parseMapReplacer } from '../../../utils/json-utils';
 import { FrequencyRowTable } from "../../components/frequency-row-table/frequency-row-table";
+import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 
 import { Chart, BubbleController, LinearScale, PointElement, CategoryScale, Tooltip, Title } from "chart.js";
 
+import { DailyCountHeatMap } from "../../components/daily-count-heat-map/daily-count-heat-map";
+
+
 type BubbleDataPointWithCount = { x: string, y: string, r: number; count: number; }
 
-Chart.register(BubbleController, LinearScale, PointElement, CategoryScale, Tooltip, Title);
+Chart.register(
+  BubbleController,
+  LinearScale,
+  PointElement,
+  CategoryScale,
+  Tooltip,
+  Title,
+  MatrixController,
+  MatrixElement
+);
+
+
 @Component({
   selector: 'app-participant-results',
-  imports: [MatTabsModule, FrequencyRowTable, MatDividerModule],
+  imports: [MatTabsModule, FrequencyRowTable, MatDividerModule, DailyCountHeatMap],
   templateUrl: './participant-results.html',
   styleUrl: './participant-results.scss',
 })
 export class ParticipantResults implements OnInit, OnDestroy {
+
   wordFrequencyDataSource: MatTableDataSource<FrequencyRow> = new MatTableDataSource([] as FrequencyRow[]);
   reactionFrequencyDataSource: MatTableDataSource<FrequencyRow> = new MatTableDataSource([] as FrequencyRow[]);
-  chart!: Chart<"bubble", BubbleDataPointWithCount[], string>;
+  timeChart!: Chart<"bubble", BubbleDataPointWithCount[], string>;
+
   globalParticipantStats?: GlobalParticipantStats;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     const participantName = this.route.snapshot.paramMap.get('participantName');
@@ -55,19 +72,19 @@ export class ParticipantResults implements OnInit, OnDestroy {
 
     this.reactionFrequencyDataSource = new MatTableDataSource(individualCountToFrequencyRows(individualReactionCount));
     this.globalParticipantStats = data.global[participantName];
-
+    
     if (this.globalParticipantStats) {
-       this.createChartTimeGraph();
+      this.createTimeChart();
     }
   }
 
   ngOnDestroy(): void {
-    this.chart?.destroy();
+    this.timeChart?.destroy();
   }
 
-  createChartTimeGraph() {
+  createTimeChart() {
     const data = this.globalParticipantStats;
-    if(!data){
+    if (!data) {
       throw new Error("Called createChartTimeGraph with undefined globalParticipantStats");
     }
     const dayOfTheWeekLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -76,7 +93,7 @@ export class ParticipantResults implements OnInit, OnDestroy {
       "12 pm", "1 pm", "2 pm", "3 pm", "4 pm", "5 pm", "6 pm", "7 pm", "8 pm", "9 pm", "10 pm", "11 pm"];
     // Note min value will be 1 to avoid div by 0
     const biggestDayTime = data.textMessages.countByDayAndTime.reduce((acc, curr) => Math.max(acc, Math.max(...curr)), 1);
-    this.chart = new Chart("timeChart", {
+    this.timeChart = new Chart("timeChart", {
       type: 'bubble',
       data: {
         datasets: [{

@@ -1,0 +1,20 @@
+
+.calendar-controls {
+    display: flex;
+    flex-direction: row;
+    mat-chip-listbox {
+        flex: auto
+    }
+}
+
+.button-margin {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+::ng-deep .calendar-year-picker-panel .mat-calendar-period-button {
+    pointer-events: none;
+}
+::ng-deep .calendar-year-picker-panel .mat-calendar-arrow {
+    display: none;
+}
