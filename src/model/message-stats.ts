@@ -22,7 +22,7 @@ export interface ConversationStats {
     participants: string[],
     participantStats: {
         [name: string]: ConversationParticipantStats
-    }
+    },
 }
 
 export interface ConversationParticipantStats {
@@ -30,7 +30,7 @@ export interface ConversationParticipantStats {
         count: number,
         countByDayAndTime: CountByDayAndTime,
         totalLength: number,
-        wordCount: IndividualCount
+        wordCount: IndividualCount,
     }
     reactions: {
         totalCount: number,
@@ -41,6 +41,9 @@ export interface ConversationParticipantStats {
         countByDayAndTime: CountByDayAndTime,
     },
     mediaCount: number,
+    dailyCount: DailyCount
 }
 
 export type IndividualCount = Map<string, number>;
+export type DailyCount = Map<string, DayCount>
+export type DayCount = {text: number, media: number, links: number};

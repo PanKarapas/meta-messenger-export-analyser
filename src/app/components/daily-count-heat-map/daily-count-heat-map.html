@@ -1,0 +1,32 @@
+<!-- Controls -->
+<div class="calendar-controls">
+    <mat-chip-listbox aria-label="Fish selection" multiple>
+        <mat-chip-option [selected]="includedValues().text" (selectionChange)="includedValues.update(val=> ({...val, text: $event.selected}))" >Texts</mat-chip-option>
+        <mat-chip-option [selected]="includedValues().media" (selectionChange)="includedValues.update(val=> ({...val, media: $event.selected}))">Media</mat-chip-option>
+        <mat-chip-option [selected]="includedValues().links"  (selectionChange)="includedValues.update(val=> ({...val, links: $event.selected}))">Links</mat-chip-option>
+    </mat-chip-listbox>
+    <button aria-label="Change heatmap to previous year" matMiniFab
+        class="button-margin"
+        (click)="calendarSelectedYearIndex.update(val => val-1)" [disabled]="calendarSelectedYearIndex()===0">
+        <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <button aria-label="Choose heatmap year" type="button" matButton="outlined" (click)="calendarYearPicker.open()">
+        {{this.calendarAvailableYears()[this.calendarSelectedYearIndex()]}}
+        <mat-form-field [class.cdk-visually-hidden]="true">
+            <input matInput [matDatepicker]="calendarYearPicker" [matDatepickerFilter]="datePickerFilter">
+            <mat-datepicker #calendarYearPicker startView="multi-year"
+                (yearSelected)="calendarYearSelected($event, calendarYearPicker)"
+                panelClass="calendar-year-picker-panel" [startAt]="getDatePickerStartDate()">
+            </mat-datepicker>
+        </mat-form-field>
+    </button>
+
+    <button aria-label="Change heatmap to next year" type="button" matMiniFab
+        class="button-margin"
+        (click)="calendarSelectedYearIndex.update(val => val+1)"
+        [disabled]="calendarSelectedYearIndex()===calendarAvailableYears().length-1">
+        <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+</div>
+
+<canvas id="calendarChart" role="img"></canvas>
